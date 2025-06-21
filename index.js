@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const app = require("./app");
-const config = require("./utils/config");
+const config = require("./utils/Config");
 console.log("connecting to mongodb...");
 mongoose.connect(config.Mongodb_URL)
 .then(()=>{
