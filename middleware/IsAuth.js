@@ -6,14 +6,12 @@ const isAdmin = (req, res, next) => {
   if (!token) {
     return res.status(401).json({ message: "No token provided" });
   }
-
   try {
     const decoded = jwt.verify(token, Config.Secret_KEY || "your-secret-key");
     
     if (decoded.name !== "Abimani") {
       return res.status(403).json({ message: "Access denied. Admins only." });
     }
-
     req.user = decoded; 
     next();
   } catch (error) {
