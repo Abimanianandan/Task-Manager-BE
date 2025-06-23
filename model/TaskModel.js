@@ -13,6 +13,13 @@ const TaskSchema = new mongoose.Schema({
         type:String,
         required:true
     },
+    subtask:{
+        type:String,
+        required:true
+    },
+    deadline: {
+    type: Date
+   },
     status:{
         type:String,
         enum: ["Pending", "Completed"],

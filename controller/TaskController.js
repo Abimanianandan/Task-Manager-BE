@@ -1,14 +1,21 @@
 const Task = require("../model/TaskModel");
 
 const TaskController = {
+  
   create: async (req, res) => {
     try {
-      const { taskname, name, description } = req.body;
-      if (!taskname || !name || !description) {
+      const { taskname, name, description, deadline, subtask } = req.body;
+      if (!taskname || !name || !description || !deadline || !subtask) {
         return res.status(400).json({ message: "Missing required fields" });
       }
 
-      const newTask = new Task({ taskname, name, description });
+      const newTask = new Task({
+        taskname,
+        name,
+        description,
+        subtask,
+        deadline: new Date(deadline),
+      });
       await newTask.save();
 
       res.status(200).json({
@@ -33,15 +40,22 @@ const TaskController = {
           status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
         query.status = formattedStatus;
       }
-
       const allTask = await Task.find(query);
-
+      allTask.forEach((task) => {
+  console.log("DB subtask:", task.subtask);
+});
       const formattedTasks = allTask.map((task) => ({
         _id: task._id,
-        taskname: task.taskname,
         name: task.name,
+        taskname: task.taskname,
         description: task.description,
+        subtask:typeof task.subtask === "string" && task.subtask.trim() !== "" ? task.subtask : "N/A",
         status: task.status,
+        deadline: task.deadline
+          ? new Date(task.deadline).toLocaleString("en-IN", {
+              timeZone: "Asia/Kolkata",
+            })
+          : "N/A",
         createdAt: task.createdAt.toLocaleString("en-IN", {
           timeZone: "Asia/Kolkata",
         }),
@@ -49,8 +63,8 @@ const TaskController = {
           timeZone: "Asia/Kolkata",
         }),
       }));
-
-      res.status(200).json({ message: "All tasks", tasks: formattedTasks });
+      console.log(formattedTasks);
+      res.status(200).json({ message: "All tasks", formattedTasks });
     } catch (error) {
       res.status(500).json({ message: error.message });
     }
@@ -72,9 +86,9 @@ const TaskController = {
   updateTaskById: async (req, res) => {
     try {
       const taskId = req.params.id;
-      const { name, taskname, description, status } = req.body;
+      const { name, taskname, description, status, subtask } = req.body;
 
-      if (!name || !taskname || !description) {
+      if (!name || !taskname || !description || !subtask) {
         return res.status(400).json({ message: "Missing required fields" });
       }
 
@@ -86,6 +100,7 @@ const TaskController = {
       updatedTask.name = name;
       updatedTask.taskname = taskname;
       updatedTask.description = description;
+      updatedTask.subtask = subtask;
       if (status) updatedTask.status = status;
 
       await updatedTask.save();
